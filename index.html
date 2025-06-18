@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gogol Record - Retro Collection</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+  /* Reset and base */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #f0f0f3;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  a {
+    color: #61dafb;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+
+  /* Header */
+  header {
+    background-color: #121a27;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #273649;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  header h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #61dafb;
+    user-select: none;
+    letter-spacing: 1.2px;
+  }
+  nav {
+    display: flex;
+    gap: 2rem;
+  }
+  nav a {
+    font-weight: 600;
+    font-size: 1rem;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s ease;
+  }
+  nav a:hover,
+  nav a.active {
+    border-color: #61dafb;
+  }
+
+  /* Main container */
+  main.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+  .collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .collection-header h2 {
+    font-weight: 700;
+    font-size: 2rem;
+    color: #f0f0f3;
+  }
+  .collection-header .stats {
+    font-weight: 500;
+    font-size: 1rem;
+    color: #a0a9b8;
+  }
+
+  /* Grid of games */
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+    gap: 1.5rem;
+  }
+
+  /* Card style */
+  .game-card {
+    background: #1f2a40;
+    border-radius: 12px;
+    box-shadow:
+      0 6px 10px rgb(0 0 0 / 0.3),
+      0 1px 4px rgb(0 0 0 / 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  .game-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 12px 20px rgb(97 218 251 / 0.5),
+      0 4px 8px rgb(0 0 0 / 0.3);
+  }
+
+  /* Cover image */
+  .game-cover {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    user-select: none;
+    border-bottom: 3px solid #61dafb;
+    transition: filter 0.3s ease;
+  }
+  .game-card:hover .game-cover {
+    filter: brightness(1.1);
+  }
+
+  /* Game info */
+  .game-info {
+    padding: 1rem 1rem 1.2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .game-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #e0e6f0;
+    margin-bottom: 0.3rem;
+  }
+  .game-system {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #61dafb;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.8rem;
+  }
+  .file-info {
+    font-size: 0.75rem;
+    color: #9ba4b5;
+    user-select: none;
+  }
+
+  /* Play button */
+  .play-button {
+    margin-top: 12px;
+    background: linear-gradient(135deg, #61dafb 0%, #21a1f1 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 0;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #121a27;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    transition: background 0.35s ease, transform 0.2s ease;
+    width: 100%;
+    user-select: none;
+  }
+  .play-button:hover {
+    background: linear-gradient(135deg, #21a1f1 0%, #61dafb 100%);
+    transform: scale(1.05);
+  }
+  .play-button:active {
+    transform: scale(0.98);
+  }
+
+  /* Game screen overlay */
+  #gameScreen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #121a27;
+    z-index: 3000;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .game-controls {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 3100;
+  }
+  .back-button {
+    background: #283349;
+    border: none;
+    padding: 10px 20px;
+    color: #61dafb;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 3px 6px rgb(33 161 241 / 0.5);
+    transition: background-color 0.3s ease;
+  }
+  .back-button:hover {
+    background: #3a4a6b;
+  }
+
+  /* Loading text */
+  .loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #61dafb;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 1.4rem;
+    user-select: none;
+    z-index: 3200;
+    display: none;
+  }
+
+  /* Footer */
+  footer {
+    margin-top: 3rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #7b869a;
+    user-select: none;
+  }
+
+  .search-bar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-bar input {
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 400px;
+      background-color: #1f2a40;
+      color: #f0f0f3;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    .console-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .console-section h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: #61dafb;
+      border-bottom: 1px solid #273649;
+      padding-bottom: 0.5rem;
+    }
+
+  /* Responsive tweaks */
+  @media (max-width: 900px) {
+    .game-grid {
+      grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+    }
+  }
+  @media (max-width: 600px) {
+    header {
+      padding: 1rem;
+    }
+    nav {
+      gap: 1rem;
+    }
+    main.container {
+      margin: 1rem auto;
+      padding: 0 1rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Gogol Record</h1>
+  <nav id="consoleFilterNav">
+  <!-- Buttons added dynamically -->
+</nav>
+</header>
+
+<main class="container" id="gameSelect">
+  <section class="collection-header">
+    <h2>Collection de Jeux Retro</h2>
+    <div class="stats">0 jeux charger • Veuillez Patienter</div>
+  </section>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Rechercher..." oninput="filterGames()" />
+  </div>
+
+  <section id="gameGridContainer">
+    <!-- Grouped games will render here -->
+  </section>
+
+  <footer>
+    Gogol Record Retro • ESC Pour Retourner au Menu
+  </footer>
+</main>
+
+<div id="gameScreen" style="display: none; flex-direction: column; align-items: center; justify-content: center;">
+  <div class="game-controls" style="display:none;">
+    <button class="back-button" onclick="backToMenu()">← Back to Collection</button>
+  </div>
+  <div class="loading" id="loadingText">Initializing emulator</div>
+  <div id="emulator" style="width: 100%; height: 100%;"></div>
+</div>
+
+<script src="games.js"></script>
+
+<script>
+  let activeConsoleFilter = "Touts";
+
+  function getConsoles(gamesArray) {
+    const systems = new Set(gamesArray.map(g => g.system));
+    return Array.from(systems).sort();
+  }
+
+  function createConsoleButtons() {
+    const nav = document.getElementById("consoleFilterNav");
+    const consoles = ["Touts", ...getConsoles(games)];
+    nav.innerHTML = "";
+
+    consoles.forEach(system => {
+      const btn = document.createElement("button");
+      btn.textContent = system;
+      btn.className = (system === activeConsoleFilter) ? "active" : "";
+      btn.style.cssText = `
+        background: none;
+        border: none;
+        font-weight: 600;
+        color: ${system === activeConsoleFilter ? '#61dafb' : '#f0f0f3'};
+        font-size: 1rem;
+        cursor: pointer;
+        border-bottom: 2px solid ${system === activeConsoleFilter ? '#61dafb' : 'transparent'};
+        padding-bottom: 4px;
+        transition: all 0.2s ease;
+      `;
+      btn.onclick = () => {
+        activeConsoleFilter = system;
+        createConsoleButtons(); // refresh UI
+        filterGames();
+      };
+      nav.appendChild(btn);
+    });
+  }
+
+  function groupGamesByConsole(gamesArray) {
+    return gamesArray.reduce((acc, game) => {
+      if (!acc[game.system]) acc[game.system] = [];
+      acc[game.system].push(game);
+      return acc;
+    }, {});
+  }
+
+  function createGameCard(game, index) {
+    return `
+      <div class="game-card">
+        <img src="${game.cover}" alt="${game.title} cover" class="game-cover" loading="lazy" />
+        <div class="game-info">
+          <div>
+            <div class="game-title">${game.title}</div>
+            <div class="game-system">${game.system}</div>
+            <div class="file-info">${game.size || 'Unknown size'} • ${game.region || 'Unknown region'} • Ready</div>
+          </div>
+          <button class="play-button" onclick="playGame(${index})" aria-label="Play ${game.title}">Play Game</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function populateGames(filter = "", consoleFilter = "Touts") {
+    const container = document.getElementById('gameGridContainer');
+    container.innerHTML = '';
+
+    const filteredGames = games.filter(g => {
+      const matchesSearch = g.title.toLowerCase().includes(filter.toLowerCase());
+      const matchesConsole = consoleFilter === "Touts" || g.system === consoleFilter;
+      return matchesSearch && matchesConsole;
+    });
+
+    const grouped = groupGamesByConsole(filteredGames);
+
+    Object.keys(grouped).sort().forEach(system => {
+      const section = document.createElement('div');
+      section.className = 'console-section';
+
+      const header = document.createElement('h3');
+      header.textContent = system;
+      section.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'game-grid';
+
+      grouped[system].forEach((game, index) => {
+        const realIndex = games.indexOf(game); // to use correct index for play
+        const card = document.createElement('div');
+        card.innerHTML = createGameCard(game, realIndex);
+        grid.appendChild(card.firstElementChild);
+      });
+
+      section.appendChild(grid);
+      container.appendChild(section);
+    });
+
+    document.querySelector('.stats').textContent = `${filteredGames.length} jeux${filteredGames.length !== 1 ? 's' : ''} charger • ${consoleFilter} • Pret`;
+  }
+
+  function filterGames() {
+    const input = document.getElementById('searchInput');
+    const query = input.value.trim();
+    populateGames(query, activeConsoleFilter);
+  }
+
+ function playGame(index) {
+  backToMenu();
+
+  const game = games[index];
+  const gameSelect = document.getElementById('gameSelect');
+  const gameScreen = document.getElementById('gameScreen');
+  const loadingText = document.getElementById('loadingText');
+  const emulator = document.getElementById('emulator');
+  const controls = document.querySelector('.game-controls');
+
+  gameSelect.style.display = 'none';
+  gameScreen.style.display = 'flex';
+  controls.style.display = 'block';
+  loadingText.style.display = 'block';
+  emulator.innerHTML = '';
+
+  setTimeout(() => {
+    loadingText.style.display = 'none';
+    emulator.innerHTML = `
+      <iframe 
+        src="emulatorjs/index.html?core=${game.core}&rom=${encodeURIComponent(game.rom)}&bios=" 
+        width="100%" height="100%" style="border:none;">
+      </iframe>
+    `;
+  }, 500);
+}
+
+
+  function backToMenu() {
+    document.getElementById('gameSelect').style.display = 'block';
+    document.getElementById('gameScreen').style.display = 'none';
+    document.querySelector('.game-controls').style.display = 'none';
+    document.getElementById('emulator').innerHTML = '';
+  }
+
+  window.onload = () => {
+    createConsoleButtons();
+    populateGames();
+  };
+</script>
+
+
+</body>
+</html>
